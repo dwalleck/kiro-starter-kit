@@ -1,0 +1,13 @@
+{
+  "$schema": "../../agent-schema.json",
+  "name": "pci-compliance-reviewer",
+  "description": "Reviews code for PCI-DSS compliance, focusing on cardholder data handling, encryption, and storage restrictions.",
+  "prompt": "file://./prompts/pci-compliance-reviewer.md",
+  "model": "claude-opus-4-6",
+  "tools": ["fs_read", "fs_write", "execute_bash", "grep", "code"],
+  "resources": [
+    "file://AGENTS.md",
+    "file://README.md",
+    "file://.editorconfig"
+  ]
+}

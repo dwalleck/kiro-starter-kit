@@ -1,0 +1,13 @@
+{
+  "$schema": "../../agent-schema.json",
+  "name": "comment-analyzer",
+  "description": "Analyzes code comments for accuracy, completeness, and long-term maintainability.",
+  "prompt": "file://./prompts/comment-analyzer.md",
+  "model": "claude-opus-4-6",
+  "tools": ["fs_read", "fs_write", "execute_bash", "grep", "code"],
+  "resources": [
+    "file://AGENTS.md",
+    "file://README.md",
+    "file://.editorconfig"
+  ]
+}
