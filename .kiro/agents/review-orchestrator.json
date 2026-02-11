@@ -3,12 +3,13 @@
   "name": "review-orchestrator",
   "description": "Orchestrates comprehensive PR reviews by coordinating specialized review agents.",
   "prompt": "file://./prompts/review-orchestrator.md",
-  "model": "claude-opus-4-6",
-  "tools": ["fs_read", "fs_write", "execute_bash", "grep", "code", "use_subagent"],
+  "tools": ["fs_read", "execute_bash", "grep", "code", "glob", "use_subagent"],
+  "allowedTools": ["fs_read", "execute_bash", "grep", "code", "glob", "use_subagent"],
   "resources": [
     "file://AGENTS.md",
-    "file://README.md",
-    "file://.editorconfig"
+    "skill://.kiro/skills/**/SKILL.md",
+    "file://.editorconfig",
+    "file://.kiro/steering/*.md"
   ],
   "toolsSettings": {
     "subagent": {

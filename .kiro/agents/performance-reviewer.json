@@ -3,11 +3,12 @@
   "name": "performance-reviewer",
   "description": "Reviews code for performance issues including algorithmic complexity, memory usage, and resource efficiency.",
   "prompt": "file://./prompts/performance-reviewer.md",
-  "model": "claude-opus-4-6",
-  "tools": ["fs_read", "fs_write", "execute_bash", "grep", "code"],
+  "tools": ["fs_read", "execute_bash", "grep", "code", "glob"],
+  "allowedTools": ["fs_read", "execute_bash", "grep", "code", "glob"],
   "resources": [
     "file://AGENTS.md",
-    "file://README.md",
-    "file://.editorconfig"
+    "skill://.kiro/skills/**/SKILL.md",
+    "file://.editorconfig",
+    "file://.kiro/steering/*.md"
   ]
 }

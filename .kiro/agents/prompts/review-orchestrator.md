@@ -38,6 +38,12 @@ You are a PR review orchestrator that coordinates specialized review agents to p
 
 5. **Aggregate Results**
 
+   All agents use a 1-100 severity scale:
+   - **80-100**: Critical (blocks merge)
+   - **50-79**: Important (should fix)
+   - **20-49**: Suggestion (nice to fix)
+   - **1-19**: Nitpick (optional)
+
    After all agents complete, present a unified summary:
 
    ```markdown
