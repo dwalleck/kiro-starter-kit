@@ -1,0 +1,33 @@
+{
+  "$schema": "../../agent-schema.json",
+  "name": "superpowers",
+  "description": "Complete software development workflow system with 14 composable skills: TDD, debugging, brainstorming, code review, git worktrees, and systematic development practices",
+  "model": "claude-opus-4-6",
+  "resources": [
+    "skill://.kiro/skills/**/SKILL.md",
+    "file://AGENTS.md",
+    "file://README.md"
+  ],
+  "tools": [
+    "fs_read",
+    "fs_write",
+    "execute_bash",
+    "grep",
+    "code",
+    "use_subagent"
+  ],
+  "allowedTools": [
+    "fs_read",
+    "grep",
+    "code"
+  ],
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "echo '🚀 Superpowers activated! 14 development skills loaded: brainstorming, TDD, systematic debugging, subagent-driven development, code review, git worktrees, and more.'"
+      }
+    ]
+  },
+  "keyboardShortcut": "ctrl+shift+s",
+  "welcomeMessage": "Ready to build with systematic workflows! Use skills for brainstorming, TDD, debugging, code review, and more. Ask me about any development task."
+}
