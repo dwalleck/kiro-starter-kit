@@ -3,8 +3,23 @@
   "name": "review-orchestrator",
   "description": "Orchestrates comprehensive PR reviews by coordinating specialized review agents.",
   "prompt": "file://./prompts/review-orchestrator.md",
-  "tools": ["fs_read", "execute_bash", "grep", "code", "glob", "use_subagent"],
-  "allowedTools": ["fs_read", "execute_bash", "grep", "code", "glob", "use_subagent"],
+  "tools": [
+    "fs_read",
+    "fs_write",
+    "execute_bash",
+    "grep",
+    "code",
+    "glob",
+    "use_subagent"
+  ],
+  "allowedTools": [
+    "fs_read",
+    "execute_bash",
+    "grep",
+    "code",
+    "glob",
+    "use_subagent"
+  ],
   "resources": [
     "file://AGENTS.md",
     "skill://.kiro/skills/**/SKILL.md",
