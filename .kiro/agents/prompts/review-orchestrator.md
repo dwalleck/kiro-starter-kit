@@ -52,21 +52,42 @@ You are a PR review orchestrator that coordinates specialized review agents to p
    - **20-49**: Suggestion (nice to fix)
    - **1-19**: Nitpick (optional)
 
-   After all agents complete, present a unified summary:
+   After all agents complete, aggregate findings into these categories:
+   - **Critical Issues** (must fix before merge)
+   - **Important Issues** (should fix)
+   - **Suggestions** (nice to have)
+   - **Positive Observations** (what's well-done in the PR)
+
+   Present a unified summary using tables for structured findings and lists for prose:
 
    ```markdown
    # PR Review Summary
 
-   ## Critical Issues (X found)
-   - [agent-name]: Issue description [file:line]
+   | Severity | Count | Agents |
+   |----------|-------|--------|
+   | Critical | X     | agent-a, agent-b |
+   | Important | X    | agent-c |
+   | Suggestion | X   | agent-d |
 
-   ## Important Issues (X found)
-   - [agent-name]: Issue description [file:line]
+   ## Critical Issues
 
-   ## Suggestions (X found)
-   - [agent-name]: Suggestion [file:line]
+   | # | Agent | File | Issue |
+   |---|-------|------|-------|
+   | 1 | agent-name | file:line | Issue description |
 
-   ## Strengths
+   ## Important Issues
+
+   | # | Agent | File | Issue |
+   |---|-------|------|-------|
+   | 1 | agent-name | file:line | Issue description |
+
+   ## Suggestions
+
+   | # | Agent | File | Issue |
+   |---|-------|------|-------|
+   | 1 | agent-name | file:line | Issue description |
+
+   ## Positive Observations
    - What's well-done in this PR
 
    ## Recommended Action
