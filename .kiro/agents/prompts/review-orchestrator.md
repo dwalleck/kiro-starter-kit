@@ -58,44 +58,61 @@ You are a PR review orchestrator that coordinates specialized review agents to p
    - **Suggestions** (nice to have)
    - **Positive Observations** (what's well-done in the PR)
 
-   Present a unified summary using tables for structured findings and lists for prose:
+   Present a unified plain-text summary. Do NOT use markdown tables or headings — the output is rendered in a terminal without a markdown renderer. Use box-drawing characters and indentation for structure:
 
-   ```markdown
-   # PR Review Summary
-
-   | Severity | Count | Agents |
-   |----------|-------|--------|
-   | Critical | X     | agent-a, agent-b |
-   | Important | X    | agent-c |
-   | Suggestion | X   | agent-d |
-
-   ## Critical Issues
-
-   | # | Agent | File | Issue |
-   |---|-------|------|-------|
-   | 1 | agent-name | file:line | Issue description |
-
-   ## Important Issues
-
-   | # | Agent | File | Issue |
-   |---|-------|------|-------|
-   | 1 | agent-name | file:line | Issue description |
-
-   ## Suggestions
-
-   | # | Agent | File | Issue |
-   |---|-------|------|-------|
-   | 1 | agent-name | file:line | Issue description |
-
-   ## Positive Observations
-   - What's well-done in this PR
-
-   ## Recommended Action
-   1. Fix critical issues first
-   2. Address important issues
-   3. Consider suggestions
-   4. Re-run review after fixes
    ```
+   ═══════════════════════════════════════════
+     PR REVIEW SUMMARY
+   ═══════════════════════════════════════════
+
+     Severity     Count   Agents
+     ─────────    ─────   ──────
+     Critical     2       code-reviewer, silent-failure-hunter
+     Important    3       type-design-analyzer
+     Suggestion   1       comment-analyzer
+
+   ───────────────────────────────────────────
+     CRITICAL ISSUES
+   ───────────────────────────────────────────
+
+     1. [code-reviewer] src/auth/login.ts:45
+        Missing null check on session token before database write.
+
+     2. [silent-failure-hunter] src/middleware/session.ts:88
+        Catch block swallows TimeoutException without logging.
+
+   ───────────────────────────────────────────
+     IMPORTANT ISSUES
+   ───────────────────────────────────────────
+
+     1. [type-design-analyzer] src/models/User.ts:12
+        User type exposes mutable internal array — use ReadonlyArray.
+
+   ───────────────────────────────────────────
+     SUGGESTIONS
+   ───────────────────────────────────────────
+
+     1. [comment-analyzer] src/utils/helpers.ts:30
+        Comment describes old behavior — update to match current logic.
+
+   ───────────────────────────────────────────
+     POSITIVE OBSERVATIONS
+   ───────────────────────────────────────────
+
+     - Consistent error handling pattern across all new endpoints
+     - Good test coverage for edge cases
+
+   ───────────────────────────────────────────
+     RECOMMENDED ACTIONS
+   ───────────────────────────────────────────
+
+     1. Fix critical issues first
+     2. Address important issues
+     3. Consider suggestions
+     4. Re-run review after fixes
+   ```
+
+   Omit any severity section that has zero findings. Always include Positive Observations and Recommended Actions.
 
 6. **Follow Up**
    - Offer to re-run specific reviews after the user makes fixes
