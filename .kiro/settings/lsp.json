@@ -1,5 +1,23 @@
 {
   "languages": {
+    "csharp": {
+      "name": "csharp-language-server",
+      "command": "csharp-ls",
+      "args": [],
+      "file_extensions": [
+        "cs"
+      ],
+      "project_patterns": [
+        "*.csproj",
+        "*.sln"
+      ],
+      "exclude_patterns": [
+        "**/bin/**",
+        "**/obj/**"
+      ],
+      "multi_workspace": true,
+      "initialization_options": {}
+    },
     "typescript": {
       "name": "typescript-language-server",
       "command": "typescript-language-server",
