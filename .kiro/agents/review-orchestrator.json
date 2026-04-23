@@ -34,9 +34,7 @@
         "comment-analyzer",
         "pr-test-analyzer",
         "silent-failure-hunter",
-        "type-design-analyzer",
-        "pci-compliance-reviewer",
-        "performance-reviewer"
+        "type-design-analyzer"
       ],
       "trustedAgents": [
         "code-reviewer",
@@ -44,9 +42,7 @@
         "comment-analyzer",
         "pr-test-analyzer",
         "silent-failure-hunter",
-        "type-design-analyzer",
-        "pci-compliance-reviewer",
-        "performance-reviewer"
+        "type-design-analyzer"
       ]
     }
   }
