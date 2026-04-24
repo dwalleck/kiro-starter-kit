@@ -39,6 +39,13 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Verify Kiro agent configs are present
+        run: |
+          if [ ! -f .kiro/agents/review-orchestrator.json ]; then
+            echo "::error::.kiro/agents/review-orchestrator.json not found. Copy the .kiro/ directory from github.com/dwalleck/kiro-starter-kit into your repository."
+            exit 1
+          fi
+
       - name: Install Kiro CLI
         run: curl -fsSL https://cli.kiro.dev/install | bash
 
