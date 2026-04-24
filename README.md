@@ -65,6 +65,22 @@ Then specify the files:
 Review src/auth/login.ts and src/utils/validation.ts
 ```
 
+## GitHub Action
+
+`.github/workflows/kiro-review.yml` runs `review-orchestrator` on every PR and posts findings as inline review comments. To enable it in your project, copy `.github/` alongside `.kiro/` and then:
+
+1. Add a `KIRO_API_KEY` secret under *Settings → Secrets and variables → Actions*.
+2. Same-repo PRs run automatically on `opened` and `synchronize`. No further setup.
+3. Fork PRs require a maintainer to apply the `safe-to-review` label. The label only authorizes the commit that was current when it was applied — after a new push, a maintainer must re-apply the label, so `KIRO_API_KEY` is never exposed to un-reviewed fork code.
+
+If the orchestrator step fails, `review-output.md` and `review-stderr.log` are uploaded as the `kiro-review-debug` artifact on the workflow run page.
+
+The Python parser that posts comments has a pytest smoke suite:
+
+```bash
+python3 -m pytest .github/scripts/test_post_review_comments.py
+```
+
 ## Available Agents
 
 | Agent | Purpose | Use When... |
