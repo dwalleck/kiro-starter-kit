@@ -1,0 +1,14 @@
+{
+  "name": "kiro-starter-kit",
+  "owner": {
+    "name": "Daryl Walleck"
+  },
+  "description": "Kiro CLI starter configurations distributed via the Claude Code plugin marketplace format.",
+  "plugins": [
+    {
+      "name": "kiro-code-reviewer",
+      "source": "./plugins/kiro-code-reviewer",
+      "description": "Orchestrated PR code review agents for the Kiro CLI: an orchestrator plus six specialists (code-reviewer, code-simplifier, comment-analyzer, pr-test-analyzer, silent-failure-hunter, type-design-analyzer)."
+    }
+  ]
+}
