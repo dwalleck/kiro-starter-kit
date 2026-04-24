@@ -1,5 +1,5 @@
 {
-  "$schema": "../../agent-schema.json",
+  "$schema": "../agent-schema.json",
   "name": "silent-failure-hunter",
   "description": "Audits error-handling code for silent failures, inadequate catch blocks, and user-hostile error messages. Specialized in catch-block specificity, fallback scrutiny, and user-facing error message quality.",
   "prompt": "file://./prompts/silent-failure-hunter.md",
@@ -10,7 +10,6 @@
     "file://CLAUDE.md",
     "file://.editorconfig",
     "file://.kiro/steering/*.md",
-    "skill://.kiro/skills/**/SKILL.md",
-    "file://kiro-code-reviewer/review-process.md"
+    "skill://.kiro/skills/**/SKILL.md"
   ]
 }

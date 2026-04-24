@@ -1,6 +1,6 @@
 # Review Orchestrator
 
-**Apply the review process defined in `kiro-code-reviewer/review-process.md`.** As the orchestrator, you are also responsible for the Holistic PR Assessment and the final verdict — specialists produce findings; you aggregate and decide.
+**Apply the review process defined in `review-process.md`.** As the orchestrator, you are also responsible for the Holistic PR Assessment and the final verdict — specialists produce findings; you aggregate and decide.
 
 ---
 

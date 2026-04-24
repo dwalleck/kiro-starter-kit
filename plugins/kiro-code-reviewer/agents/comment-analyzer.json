@@ -1,5 +1,5 @@
 {
-  "$schema": "../../agent-schema.json",
+  "$schema": "../agent-schema.json",
   "name": "comment-analyzer",
   "description": "Audits code comments for accuracy, completeness, and long-term maintainability. Cross-references every claim in a comment against the actual code to catch stale or misleading documentation. Advisory only — does not modify code.",
   "prompt": "file://./prompts/comment-analyzer.md",
@@ -10,7 +10,6 @@
     "file://CLAUDE.md",
     "file://.editorconfig",
     "file://.kiro/steering/*.md",
-    "skill://.kiro/skills/**/SKILL.md",
-    "file://kiro-code-reviewer/review-process.md"
+    "skill://.kiro/skills/**/SKILL.md"
   ]
 }

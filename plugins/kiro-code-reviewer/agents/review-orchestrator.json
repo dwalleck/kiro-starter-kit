@@ -1,5 +1,5 @@
 {
-  "$schema": "../../agent-schema.json",
+  "$schema": "../agent-schema.json",
   "name": "review-orchestrator",
   "description": "Orchestrates comprehensive PR reviews by coordinating specialized review agents. Selects applicable specialists, batches them (≤4 parallel), verifies Critical/Important findings via LSP, enforces evidence standards, aggregates findings, and decides the final verdict.",
   "prompt": "file://./prompts/review-orchestrator.md",
@@ -25,8 +25,7 @@
     "file://CLAUDE.md",
     "file://.editorconfig",
     "file://.kiro/steering/*.md",
-    "skill://.kiro/skills/**/SKILL.md",
-    "file://kiro-code-reviewer/review-process.md"
+    "skill://.kiro/skills/**/SKILL.md"
   ],
   "toolsSettings": {
     "subagent": {

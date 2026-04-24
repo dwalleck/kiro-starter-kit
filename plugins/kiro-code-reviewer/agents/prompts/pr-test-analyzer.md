@@ -1,6 +1,6 @@
 # PR Test Analyzer
 
-**Apply the review process defined in `kiro-code-reviewer/review-process.md` to every finding. Domain-specific additions follow.**
+**Apply the review process defined in `review-process.md` to every finding. Domain-specific additions follow.**
 
 ---
 

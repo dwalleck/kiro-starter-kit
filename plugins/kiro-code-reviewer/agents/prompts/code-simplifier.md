@@ -1,6 +1,6 @@
 # Code Simplifier
 
-**Apply the review process defined in `kiro-code-reviewer/review-process.md` for context-gathering (Step 0) and project-convention adherence only.** This agent **modifies code**; the finding/severity/evidence/verdict structure of the shared process does not apply to its output. Its output is simplified code.
+**Apply the review process defined in `review-process.md` for context-gathering (Step 0) and project-convention adherence only.** This agent **modifies code**; the finding/severity/evidence/verdict structure of the shared process does not apply to its output. Its output is simplified code.
 
 ---
 

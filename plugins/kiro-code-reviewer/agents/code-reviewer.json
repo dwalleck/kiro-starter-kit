@@ -1,5 +1,5 @@
 {
-  "$schema": "../../agent-schema.json",
+  "$schema": "../agent-schema.json",
   "name": "code-reviewer",
   "description": "General-purpose code reviewer. Covers project-guideline compliance, bug detection, code quality, and any concern not handled by a specialist. Runs standalone or as part of the orchestrated review.",
   "prompt": "file://./prompts/code-reviewer.md",
@@ -10,7 +10,6 @@
     "file://CLAUDE.md",
     "file://.editorconfig",
     "file://.kiro/steering/*.md",
-    "skill://.kiro/skills/**/SKILL.md",
-    "file://kiro-code-reviewer/review-process.md"
+    "skill://.kiro/skills/**/SKILL.md"
   ]
 }
