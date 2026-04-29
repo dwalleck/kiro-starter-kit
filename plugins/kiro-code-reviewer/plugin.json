@@ -1,6 +1,7 @@
 {
   "name": "kiro-code-reviewer",
   "version": "0.1.0",
+  "format": "kiro-cli",
   "description": "Orchestrated PR code review agents for the Kiro CLI. Includes a review-orchestrator that coordinates six specialist reviewers (code-reviewer, code-simplifier, comment-analyzer, pr-test-analyzer, silent-failure-hunter, type-design-analyzer) against a shared review process.",
   "author": {
     "name": "Daryl Walleck"
