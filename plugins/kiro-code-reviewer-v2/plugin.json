@@ -1,0 +1,9 @@
+{
+  "name": "kiro-code-reviewer-v2",
+  "version": "0.1.0",
+  "format": "kiro-cli",
+  "description": "Orchestrated PR code review agents for the Kiro CLI (v2). Refines the v1 design: shared review-process.md focuses on universal evidence discipline, role-specific prompts own their PR-framing artifacts, the orchestrator does survey-depth Step 1 reading and audit-style verification (tiered with a hard backstop), Adjacent Observations carry the same evidence bar as findings, scope is causally defined by the diff's blast radius, and cross-specialist corroboration is treated as a first-class validity signal.",
+  "author": {
+    "name": "Daryl Walleck"
+  }
+}

@@ -9,6 +9,11 @@
       "name": "kiro-code-reviewer",
       "source": "./plugins/kiro-code-reviewer",
       "description": "Orchestrated PR code review agents for the Kiro CLI: an orchestrator plus six specialists (code-reviewer, code-simplifier, comment-analyzer, pr-test-analyzer, silent-failure-hunter, type-design-analyzer)."
+    },
+    {
+      "name": "kiro-code-reviewer-v2",
+      "source": "./plugins/kiro-code-reviewer-v2",
+      "description": "Orchestrated PR code review agents for the Kiro CLI: an orchestrator plus six specialists (code-reviewer, code-simplifier, comment-analyzer, pr-test-analyzer, silent-failure-hunter, type-design-analyzer)."
     }
   ]
 }
