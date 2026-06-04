@@ -1,0 +1,12 @@
+{
+  "name": "code-testing-planner",
+  "description": "Reads .testagent/research.md and writes a phased .testagent/plan.md. Polyglot leaf stage: no crew, no subagent spawning.",
+  "prompt": "file://./prompts/code-testing-planner.md",
+  "tools": ["read", "write", "grep", "glob"],
+  "allowedTools": ["read", "grep", "glob"],
+  "toolsSettings": {
+    "write": {
+      "allowedPaths": [".testagent/**"]
+    }
+  }
+}

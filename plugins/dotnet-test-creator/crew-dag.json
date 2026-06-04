@@ -1,0 +1,24 @@
+{
+  "_comment": "MANUAL variant. The literal payload code-testing-generator emits for ONE pass via the subagent (crew) tool. Flat by construction: research -> plan -> implement, linear. The implement stage loops ALL phases itself and runs build/test/fix inline, collapsing the per-phase fan-out AND the builder/tester/fixer/linter nesting into a single leaf stage. Forward handoff is via .testagent/*.md on a shared cwd, NOT via prompt_template (only {task} is substituted). Iteration + final validation live in the orchestrator's own turns (generator Steps 4-5). Polyglot: stages read extensions/<lang>.md and use the project's own build/test commands. For native engine-bounded coverage iteration, use crew-dag-loop.json instead.",
+  "task": "<<the user's test-generation request, verbatim — e.g. 'Generate unit tests for src/InvoiceService.ts'>>",
+  "mode": "blocking",
+  "stages": [
+    {
+      "name": "research",
+      "role": "code-testing-researcher",
+      "prompt_template": "Research the codebase for this test-generation task: {task}\n\nIdentify project structure, language(s), the test framework, build/test commands, the source files in scope, existing tests, and a per-file estimated coverage level. Build a leaf-first dependency graph. Read the matching language extension first (see your prompt). Write the complete findings to .testagent/research.md following the output contract in your prompt. Do NOT write any test code."
+    },
+    {
+      "name": "plan",
+      "role": "code-testing-planner",
+      "depends_on": ["research"],
+      "prompt_template": "Create a phased test implementation plan for: {task}\n\nRead .testagent/research.md. Choose broad vs targeted strategy from the estimated-coverage data, order phases leaf-first, and assign every in-scope source file to a phase with concrete test cases. Write the plan to .testagent/plan.md following the output contract in your prompt. Do NOT write any test code."
+    },
+    {
+      "name": "implement",
+      "role": "code-testing-implementer",
+      "depends_on": ["plan"],
+      "prompt_template": "Implement EVERY phase of the test plan in order for: {task}\n\nRead .testagent/plan.md and .testagent/research.md. For each phase in sequence: read the source files in full, write the test files (append-only to existing test files; never edit production code), then build and run ONLY the affected test project inline with the project's build/test commands (no full-solution build here), fixing failing assertions against real production behavior — retry build up to 3x and tests up to 5x. Never skip/ignore a test. Append a per-phase result block to .testagent/status.md."
+    }
+  ]
+}

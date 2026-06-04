@@ -1,0 +1,23 @@
+{
+  "name": "code-testing-validator",
+  "description": "Runs full build/test + coverage-gap + a test-quality audit (test-gap-analysis, assertion-quality, test-anti-patterns), then routes the crew: fires loop_to back to implement (via the summary tool, resultType=changes_needed + NEEDS_WORK token, with categorized FAILING/MISSING/WEAK/SMELL feedback) when issues remain, or reports terminal when clean. Polyglot leaf stage: no crew grant; does not write tests.",
+  "prompt": "file://./prompts/code-testing-validator.md",
+  "tools": ["read", "write", "shell", "grep", "glob", "code"],
+  "allowedTools": ["read", "grep", "glob", "code"],
+  "toolsSettings": {
+    "shell": {
+      "allowedCommands": ["^dotnet (build|test|restore)", "^npm (run )?(test|build)", "^npx ", "^pnpm ", "^yarn ", "^pytest", "^python -m ", "^go (test|build|vet)", "^cargo (test|build)", "^(\\./)?mvnw? ", "^(\\./)?gradlew? "],
+      "autoAllowReadonly": true
+    },
+    "write": {
+      "allowedPaths": [".testagent/**"]
+    }
+  },
+  "resources": [
+    "skill://.kiro/skills/code-testing-extensions/SKILL.md",
+    "skill://.kiro/skills/test-analysis-extensions/SKILL.md",
+    "skill://.kiro/skills/test-gap-analysis/SKILL.md",
+    "skill://.kiro/skills/assertion-quality/SKILL.md",
+    "skill://.kiro/skills/test-anti-patterns/SKILL.md"
+  ]
+}

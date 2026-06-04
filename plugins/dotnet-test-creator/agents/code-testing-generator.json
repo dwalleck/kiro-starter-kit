@@ -1,0 +1,25 @@
+{
+  "name": "code-testing-generator",
+  "description": "Orchestrates polyglot unit-test generation via a Research->Plan->Implement crew pipeline, then runs final full validation (or delegates it to the native-loop validate stage). The ONLY agent in this set permitted to run a crew; the stage agents are leaves. Use when asked to generate tests, write unit tests, add tests, or improve coverage.",
+  "prompt": "file://./prompts/code-testing-generator.md",
+  "tools": ["read", "write", "shell", "grep", "glob", "code", "subagent"],
+  "allowedTools": ["read", "grep", "glob", "code"],
+  "toolsSettings": {
+    "crew": {
+      "availableAgents": ["code-testing-researcher", "code-testing-planner", "code-testing-implementer", "code-testing-validator"],
+      "trustedAgents": ["code-testing-researcher", "code-testing-planner", "code-testing-implementer", "code-testing-validator"]
+    },
+    "shell": {
+      "allowedCommands": ["^dotnet (build|test|restore|sln|add)", "^npm (run )?(test|build|ci|install)", "^npx ", "^pnpm ", "^yarn ", "^pytest", "^python -m ", "^go (test|build|vet)", "^cargo (test|build|fmt|clippy)", "^(\\./)?mvnw? ", "^(\\./)?gradlew? "],
+      "autoAllowReadonly": true
+    },
+    "write": {
+      "allowedPaths": ["**/*"],
+      "deniedPaths": [".git/**"]
+    }
+  },
+  "resources": [
+    "skill://.kiro/skills/code-testing-agent/SKILL.md",
+    "skill://.kiro/skills/code-testing-extensions/SKILL.md"
+  ]
+}

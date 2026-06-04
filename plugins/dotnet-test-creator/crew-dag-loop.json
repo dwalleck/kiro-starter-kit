@@ -1,0 +1,35 @@
+{
+  "_comment": "NATIVE-LOOP variant (4 stages) via the subagent (crew) tool. Identical RPI core to crew-dag.json, but final validation + a test-quality audit + coverage/quality iteration are expressed IN the crew: a `validate` stage runs the full build/test check AND applies the test-gap-analysis / assertion-quality / test-anti-patterns skills, and if anything fails it fires `loop_to` back to `implement` by calling the built-in `summary` tool with resultType='changes_needed' and the token NEEDS_WORK in its result (followed by a categorized FAILING/MISSING/WEAK/SMELL list). On loop re-entry the engine passes the validator's feedback to `implement` as context (the one edge that injects predecessor output — forward depends_on edges do NOT; they rely on .testagent/*.md disk handoff). Loop bounds: trigger >= 4 chars, max_iterations 1..=10, no self-loops, no mutual loops, planned upfront. With this variant the orchestrator just submits the crew and reports; it does NOT run its own manual loop or final validation. Polyglot: stages read extensions/<lang>.md and use the project's own build/test commands.",
+  "task": "<<the user's test-generation request, verbatim>>",
+  "mode": "blocking",
+  "stages": [
+    {
+      "name": "research",
+      "role": "code-testing-researcher",
+      "prompt_template": "Research the codebase for this test-generation task: {task}\n\nIdentify project structure, language(s), the test framework, build/test commands, the source files in scope, existing tests, and a per-file estimated coverage level. Build a leaf-first dependency graph. Read the matching language extension first (see your prompt). Write the complete findings to .testagent/research.md following the output contract in your prompt. Do NOT write any test code."
+    },
+    {
+      "name": "plan",
+      "role": "code-testing-planner",
+      "depends_on": ["research"],
+      "prompt_template": "Create a phased test implementation plan for: {task}\n\nRead .testagent/research.md. Choose broad vs targeted strategy from the estimated-coverage data, order phases leaf-first, and assign every in-scope source file to a phase with concrete test cases. Write the plan to .testagent/plan.md following the output contract in your prompt. Do NOT write any test code."
+    },
+    {
+      "name": "implement",
+      "role": "code-testing-implementer",
+      "depends_on": ["plan"],
+      "prompt_template": "Implement the test plan for: {task}\n\nFIRST RUN: read .testagent/plan.md and .testagent/research.md and implement EVERY phase in order. LOOP RE-ENTRY (validator triggered NEEDS_WORK): the validator's categorized feedback is provided to you as context — read it plus .testagent/status.md and address ONLY what it names (FAILING=fix build/test error; MISSING=add tests for the file; WEAK=strengthen the test with concrete value/behavior assertions; SMELL=apply the named fix); do NOT redo phases already marked SUCCESS. In both cases: read source files in full, write tests append-only (never edit production code), build and run ONLY the affected test project inline with the project's build/test commands, fix failing assertions against real behavior (build retry 3x, test retry 5x), never skip/ignore. Append a per-phase/per-gap result block to .testagent/status.md."
+    },
+    {
+      "name": "validate",
+      "role": "code-testing-validator",
+      "depends_on": ["implement"],
+      "prompt_template": "Validate the full test suite for: {task}\n\nRun a full non-incremental build (all target frameworks/configs) and a fresh full test run using the commands in .testagent/research.md. Compare in-scope source files (.testagent/research.md) against tests created (.testagent/status.md) for coverage gaps. Then run the test-quality audit by APPLYING the skills (do not hand-roll): test-gap-analysis (pseudo-mutation), assertion-quality (shallow/assertion-free), and test-anti-patterns (severity-ranked). DECISION via the built-in `summary` tool: if any build failure, test failure, non-trivial uncovered source file, or quality issue (mutation-surviving, shallow, or Critical/Warning anti-pattern) remains, call summary with resultType='changes_needed' and put the token NEEDS_WORK in the result followed by a categorized list — FAILING: (build/test errors), MISSING: (untested files), WEAK: (tests that assert nothing / survive mutation), SMELL: (anti-patterns + fix). Otherwise call summary with resultType='terminal' and a final report. Do NOT write tests yourself.",
+      "loop_to": {
+        "target": "implement",
+        "trigger": "NEEDS_WORK",
+        "max_iterations": 3
+      }
+    }
+  ]
+}

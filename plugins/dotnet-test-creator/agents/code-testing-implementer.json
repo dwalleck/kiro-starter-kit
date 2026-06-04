@@ -1,0 +1,20 @@
+{
+  "name": "code-testing-implementer",
+  "description": "Implements the test plan (every phase, or only the gaps named on loop re-entry): writes test files and runs build/test/fix INLINE via shell. Polyglot leaf stage: no crew, no subagent spawning — builder/tester/fixer/linter are absorbed into its own shell calls.",
+  "prompt": "file://./prompts/code-testing-implementer.md",
+  "tools": ["read", "write", "shell", "grep", "glob", "code"],
+  "allowedTools": ["read", "grep", "glob", "code"],
+  "toolsSettings": {
+    "shell": {
+      "allowedCommands": ["^dotnet (build|test|restore|sln|add|format)", "^npm (run )?(test|build|ci|install)", "^npx ", "^pnpm ", "^yarn ", "^pytest", "^python -m ", "^go (test|build|vet)", "^cargo (test|build|fmt|clippy)", "^(\\./)?mvnw? ", "^(\\./)?gradlew? "],
+      "autoAllowReadonly": true
+    },
+    "write": {
+      "allowedPaths": ["**/*"],
+      "deniedPaths": [".git/**"]
+    }
+  },
+  "resources": [
+    "skill://.kiro/skills/code-testing-extensions/SKILL.md"
+  ]
+}
