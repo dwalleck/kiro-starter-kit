@@ -30,37 +30,45 @@ output into the next — ordering comes from `depends_on`, data comes from the f
 
 ```mermaid
 flowchart TD
-    User(["User: 'Generate unit tests for &lt;path&gt;'"]) --> Gen["code-testing-generator<br/>(orchestrator - the only agent that can run a crew)"]
-    Gen --> Scope["Step 1 - Clarify scope, detect language,<br/>read code-testing-extensions/&lt;lang&gt;.md"]
-    Scope --> Strategy{"Step 2 - Choose strategy"}
+    User(["User request:<br/>'Generate unit tests for ...'"]) --> Gen["code-testing-generator<br/>(orchestrator)"]
+    Gen --> Scope["Step 1 - Clarify scope,<br/>load language extension"]
+    Scope --> Strategy{"Step 2 -<br/>Choose strategy"}
 
-    Strategy -- "Direct<br/>(one small file/class)" --> DirectWrite["No crew - generator writes the tests itself,<br/>builds/tests/fixes inline"]
-    Strategy -- "Single pass / Iterative-manual<br/>(module or a few files)" --> ManualCrew["Submit crew-dag.json<br/>(3 linear stages)"]
-    Strategy -- "Iterative-native<br/>(large scope / coverage target)" --> LoopCrew["Submit crew-dag-loop.json<br/>(4 stages + loop_to)"]
+    Strategy -- "Direct<br/>(one small file)" --> DirectWrite["No crew - generator<br/>writes tests itself"]
+    Strategy -- "Single pass /<br/>Iterative-manual" --> ManualCrew["Submit crew-dag.json<br/>(3 stages)"]
+    Strategy -- "Iterative-native" --> LoopCrew["Submit crew-dag-loop.json<br/>(4 stages + loop_to)"]
 
-    subgraph RPI["RPI crew stages - leaf agents, file handoff via .testagent/"]
+    subgraph RPI["RPI crew (handoff via .testagent/ files)"]
         direction TB
-        R["research<br/><b>code-testing-researcher</b>"] -- ".testagent/research.md" --> P["plan<br/><b>code-testing-planner</b>"]
-        P -- ".testagent/plan.md" --> I["implement<br/><b>code-testing-implementer</b><br/>loops ALL phases; scoped<br/>build/test/fix inline (3x/5x retries)"]
+        R["`**research**
+        code-testing-researcher`"] -- "research.md" --> P["`**plan**
+        code-testing-planner`"]
+        P -- "plan.md" --> I["`**implement**
+        code-testing-implementer
+        all phases; inline
+        build/test/fix`"]
     end
 
     ManualCrew --> R
     LoopCrew --> R
 
-    I -- ".testagent/status.md" --> Variant{Which variant?}
+    I -- "status.md" --> Variant{Which variant?}
 
-    Variant -- "manual (crew-dag.json)" --> Val5["Step 5 - generator validates itself:<br/>full non-incremental build, fresh full test run,<br/>concrete-assertion check, coverage-gap review"]
-    Val5 --> GapQ{"Coverage target met?"}
-    GapQ -- "no - Iterative-manual only" --> Narrow["Step 4 - re-submit a NEW crew pass<br/>narrowed to the uncovered files<br/>(research-2.md / plan-2.md)"]
+    Variant -- "manual" --> Val5["Step 5 - generator validates:<br/>full build + full test run,<br/>assertion + coverage review"]
+    Val5 --> GapQ{"Coverage<br/>target met?"}
+    GapQ -- "no (Iterative-manual)" --> Narrow["Step 4 - new crew pass<br/>narrowed to uncovered files"]
     Narrow --> R
     GapQ -- "yes" --> Report
 
-    Variant -- "native (crew-dag-loop.json)" --> V["validate<br/><b>code-testing-validator</b><br/>full build + full test run, coverage-gap check,<br/>quality audit: test-gap-analysis,<br/>assertion-quality, test-anti-patterns"]
-    V -- "summary(changes_needed) fires NEEDS_WORK<br/>+ FAILING / MISSING / WEAK / SMELL list<br/>(loop_to: implement, max 3 iterations)" --> I
-    V -- "summary(terminal)" --> Report
+    Variant -- "native" --> V["`**validate**
+    code-testing-validator
+    full build/test +
+    coverage + quality audit`"]
+    V -- "NEEDS_WORK: FAILING/MISSING/<br/>WEAK/SMELL (max 3 loops)" --> I
+    V -- "all checks pass" --> Report
 
     DirectWrite --> Val5
-    Report["Step 6 - Report<br/>strategy, tests created/passing, files,<br/>build results, next steps<br/>(.testagent/ kept as the audit trail)"]
+    Report["Step 6 - Report<br/>(.testagent/ kept<br/>as audit trail)"]
 ```
 
 ## The agents
@@ -140,6 +148,54 @@ the token `NEEDS_WORK` plus a categorized **FAILING / MISSING / WEAK / SMELL** l
 fires `loop_to → implement` (engine-bounded, `max_iterations: 3`), and the engine passes that
 feedback to the implementer as context. Otherwise it returns `resultType="terminal"` with the
 final report.
+
+## The `.testagent/` artifacts
+
+The stages communicate only through these files (the crew tool never pipes one stage's output
+into the next). Together they are also the run's audit trail — which is why the generator
+never deletes the directory.
+
+### `research.md` — written by the researcher, read by everyone
+
+The codebase analysis that every later stage relies on:
+
+- **Project Overview** — path, language, framework, test framework
+- **Dependency Graph** — leaf-first: which types to test directly, which need mocks
+- **Public API Surface** — per in-scope type, its public method/constructor signatures
+- **Build & Test Commands** — discovered from project files, scripts, and README
+- **Files to Test** — High/Medium/Low priority tables with classes, testability ratings, and
+  estimated coverage (untested / partial / well-tested)
+- **Existing Tests & Coverage, Existing Test Projects, Testing Patterns, Recommendations**
+
+### `plan.md` — written by the planner, read by the implementer
+
+2–5 phases, ordered leaf-first, covering **every** in-scope source file. Each phase lists:
+
+- the target file(s)
+- the methods/scenarios to cover (happy path, edge cases, error cases)
+- which dependencies to mock
+- concrete success criteria (e.g. "all listed methods have tests, project compiles, tests pass")
+
+Plus follow-up notes for symbols that are hard to test (sealed/internal/no seam) — recorded
+instead of planning production-code changes.
+
+### `status.md` — appended by the implementer (and the validator)
+
+One result block per phase (or per gap, on loop re-entry):
+
+```text
+PHASE: [N] (or GAP: [description])
+STATUS: SUCCESS | PARTIAL | FAILED
+TESTS_CREATED / TESTS_PASSING: [counts]
+FILES: - path/to/TestFile.ext (N tests)
+ISSUES: - [unresolved issues]
+```
+
+In the native-loop variant the validator appends its findings too, so the file records *why*
+the loop fired (or didn't) on each iteration — the only place that history exists.
+
+On iterative-manual re-runs, subsequent passes write suffixed copies (`research-2.md`,
+`plan-2.md`) instead of overwriting the originals.
 
 ## Two iteration variants
 
