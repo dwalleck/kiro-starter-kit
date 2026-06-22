@@ -1,0 +1,9 @@
+{
+  "name": "feature-engineering",
+  "version": "0.1.0",
+  "format": "kiro-cli",
+  "description": "Builds features via an orchestrated Spec → Probe → Design → Plan → Build → Validate pipeline whose discipline is enforced by the engine: it refuses to advance on a vague spec, refuses to design on a disproven understanding of the system, and (in the loop variant) stops and loops when built code drifts from the plan.",
+  "author": {
+    "name": "Daryl Walleck"
+  }
+}

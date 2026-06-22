@@ -1,0 +1,25 @@
+{
+  "name": "feature-engineering-validator",
+  "description": "Re-runs the prove-it-prototype oracle against the built code, re-checks every budget, runs every Regression fence, and runs the two-axis review (Standards + Spec), then ROUTES the crew: fires loop_to back to build (via the summary tool, resultType=changes_needed + NEEDS_WORK token, with categorized DRIFT/BUDGET/FENCE/SPEC/STANDARD feedback) when issues remain, or reports terminal when clean. Leaf stage: no crew grant. Writes ONLY to .feature/** \u2014 it cannot fix code itself; the builder owns fixes.",
+  "prompt": "file://./prompts/feature-engineering-validator.md",
+  "tools": ["read", "write", "shell", "grep", "glob", "code"],
+  "allowedTools": ["read", "grep", "glob", "code"],
+  "toolsSettings": {
+    "shell": {
+      "allowedCommands": ["^dotnet (build|test|run)", "^npm (run )?(test|build)", "^npx ", "^pnpm ", "^yarn ", "^pytest", "^python3? ", "^go (test|build|vet|run)", "^cargo (test|build|run)", "^(\\./)?mvnw? ", "^(\\./)?gradlew? ", "^sqlite3 ", "^jq ", "^curl ", "^git (status|log|diff|show|grep|rev-parse|branch)"],
+      "autoAllowReadonly": true
+    },
+    "write": {
+      "allowedPaths": [".feature/**"]
+    }
+  },
+  "resources": [
+    "file://CONTEXT.md",
+    "file://CONTEXT-MAP.md",
+    "file://ARCHITECTURE.md",
+    "file://docs/adr/**/*.md",
+    "skill://.kiro/skills/review/SKILL.md",
+    "skill://.kiro/skills/checkpointed-build/SKILL.md",
+    "skill://.kiro/skills/falsifiable-design/SKILL.md"
+  ]
+}

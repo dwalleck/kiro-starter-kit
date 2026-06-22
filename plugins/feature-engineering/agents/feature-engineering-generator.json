@@ -1,0 +1,29 @@
+{
+  "name": "feature-engineering-generator",
+  "description": "Orchestrates verified feature development via a Design->Plan->Build(->Validate) crew pipeline, AFTER running the two human-adjudicated gates itself: interrogated-spec (pin + sign off the behavior) and prove-it-prototype (probe + independent oracle must agree). The ONLY agent in this set permitted to run a crew; the stage agents are leaves. Use when asked to build a feature, add an endpoint, implement a capability, or 'build X' on a system you did not personally write.",
+  "prompt": "file://./prompts/feature-engineering-generator.md",
+  "tools": ["read", "write", "shell", "grep", "glob", "code", "subagent"],
+  "allowedTools": ["read", "grep", "glob", "code"],
+  "toolsSettings": {
+    "crew": {
+      "availableAgents": ["feature-engineering-designer", "feature-engineering-planner", "feature-engineering-builder", "feature-engineering-validator"],
+      "trustedAgents": ["feature-engineering-designer", "feature-engineering-planner", "feature-engineering-builder", "feature-engineering-validator"]
+    },
+    "shell": {
+      "allowedCommands": ["^dotnet (build|test|restore|run)", "^npm (run )?(test|build|ci|install)", "^npx ", "^pnpm ", "^yarn ", "^pytest", "^python3? ", "^go (test|build|vet|run)", "^cargo (test|build|run|fmt|clippy)", "^(\\./)?mvnw? ", "^(\\./)?gradlew? ", "^sqlite3 ", "^jq ", "^curl ", "^git (status|log|diff|show|grep|rev-parse|branch)"],
+      "autoAllowReadonly": true
+    },
+    "write": {
+      "allowedPaths": ["**/*"],
+      "deniedPaths": [".git/**"]
+    }
+  },
+  "resources": [
+    "file://CONTEXT.md",
+    "file://CONTEXT-MAP.md",
+    "file://ARCHITECTURE.md",
+    "file://docs/adr/**/*.md",
+    "skill://.kiro/skills/interrogated-spec/SKILL.md",
+    "skill://.kiro/skills/prove-it-prototype/SKILL.md"
+  ]
+}

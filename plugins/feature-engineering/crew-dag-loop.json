@@ -1,0 +1,35 @@
+{
+  "_comment": "NATIVE-LOOP variant (4 stages) via the subagent (crew) tool. Identical design->plan->build core to crew-dag.json, but final validation + the drift/budget/spec audit + iteration are expressed IN the crew: a `validate` stage re-runs the prove-it-prototype oracle against the built code, re-checks every budget, runs the two-axis review (Standards + Spec), and runs every Regression fence from the design's Falsification table. If anything fails it fires `loop_to` back to `build` by calling the built-in `summary` tool with resultType='changes_needed' and the token NEEDS_WORK in its result (followed by a categorized DRIFT/BUDGET/FENCE/SPEC/STANDARD list). On loop re-entry the engine passes the validator's feedback to `build` as context (the one edge that injects predecessor output \u2014 forward depends_on edges do NOT; they rely on .feature/*.md disk handoff). The human-adjudicated gates (spec sign-off, probe/oracle agreement) still run in the orchestrator's own turns BEFORE the crew (generator Steps 1-2). Loop bounds: trigger >= 4 chars, max_iterations 1..=10, no self-loops, no mutual loops, planned upfront. With this variant the orchestrator just submits the crew and reports; it does NOT run its own manual final validation.",
+  "task": "<<the user's feature request, verbatim>>",
+  "mode": "blocking",
+  "stages": [
+    {
+      "name": "design",
+      "role": "feature-engineering-designer",
+      "prompt_template": "Produce a falsifiable design for this feature: {task}\n\nRead .feature/spec.md (the signed-off behavior contract) and .feature/probe.md (the probe/oracle agreement and what was learned about the real system). Apply the falsifiable-design discipline: enumerate every production-reachable input shape, write the design as numbered claims, pair each claim with an independent falsifier and a distinct oracle, rank falsifiers by cost, and RUN THE CHEAPEST FALSIFIER NOW \u2014 it must pass before you finish. Write the design with its Falsification table (including a Regression fence column) and a Negative space list of >=3 things the feature deliberately will NOT do to .feature/design.md following the output contract in your prompt. Do NOT write production code."
+    },
+    {
+      "name": "plan",
+      "role": "feature-engineering-planner",
+      "depends_on": ["design"],
+      "prompt_template": "Decompose the approved design into a budgeted slice plan for: {task}\n\nRead .feature/design.md and .feature/spec.md. Apply the budgeted-plan discipline: one slice per claim, each slice <= ~50 lines / <= 2 files / <= 30 minutes. For every slice fill in ALL mandatory fields \u2014 claim, oracle, stress fixture (designed to FAIL on a plausible bug, with expected output written down first), loop/wall budget for every new loop (asymptotic cost AND production scale), and exact file paths. Write the plan with a Plan Self-Review section (the five lists, no gaps) to .feature/plan.md following the output contract in your prompt. You have NO shell and NO code tools by design: you plan, you do not build."
+    },
+    {
+      "name": "build",
+      "role": "feature-engineering-builder",
+      "depends_on": ["plan"],
+      "prompt_template": "Implement the slice plan for: {task}\n\nFIRST RUN: read .feature/plan.md, .feature/design.md, and .feature/probe.md and implement EVERY slice in order. LOOP RE-ENTRY (validator triggered NEEDS_WORK): the validator's categorized feedback is provided to you as context \u2014 read it plus .feature/status.md and address ONLY what it names (DRIFT=fix the code so the oracle agrees again; BUDGET=bring the loop/wall cost back under budget; FENCE=fix the regression-fence failure; SPEC=implement the missing/!wrong spec behavior; STANDARD=fix the standards violation); do NOT redo slices already marked GREEN. In both cases apply checkpointed-build per slice: implement the smallest change, run unit tests, run the stress fixture, re-run the oracle against the built code, check the budget \u2014 all five pass before advancing; never edit the probe/oracle/spec/design to force agreement. Append a per-slice/per-fix result block to .feature/status.md."
+    },
+    {
+      "name": "validate",
+      "role": "feature-engineering-validator",
+      "depends_on": ["build"],
+      "prompt_template": "Validate the built feature against reality and the contract for: {task}\n\nRead .feature/spec.md, .feature/design.md, .feature/probe.md, .feature/plan.md, and .feature/status.md. Then: (1) re-run the prove-it-prototype oracle against the built code and compare to the spec-correct answer (DRIFT check); (2) re-check every loop/wall budget in the plan at production scale (BUDGET check); (3) run every Regression fence in the design's Falsification table (FENCE check); (4) run the two-axis review by APPLYING the review skill \u2014 Standards (repo conventions) and Spec (does the diff implement .feature/spec.md, with no scope creep). DECISION via the built-in `summary` tool: if any oracle drift, budget breach, failing fence, missing/wrong spec behavior, scope creep, or standards violation remains, call summary with resultType='changes_needed' and put the token NEEDS_WORK in the result followed by a categorized list \u2014 DRIFT: (oracle vs built code), BUDGET: (loop/phase over budget), FENCE: (failing regression test), SPEC: (missing/wrong/extra behavior, quoting the spec line), STANDARD: (violation + the rule). Otherwise call summary with resultType='terminal' and a final report. Do NOT fix code yourself \u2014 you write only to .feature/**; the builder owns the fixes.",
+      "loop_to": {
+        "target": "build",
+        "trigger": "NEEDS_WORK",
+        "max_iterations": 3
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "feature-engineering-planner",
+  "description": "Reads .feature/design.md and writes a budgeted slice plan to .feature/plan.md. Leaf stage: no crew, no subagent spawning. By design it has NO shell and NO code tool and writes ONLY to .feature/** \u2014 it is structurally incapable of writing production code or running commands. It plans; it does not build.",
+  "prompt": "file://./prompts/feature-engineering-planner.md",
+  "tools": ["read", "write", "grep", "glob"],
+  "allowedTools": ["read", "grep", "glob"],
+  "toolsSettings": {
+    "write": {
+      "allowedPaths": [".feature/**"]
+    }
+  },
+  "resources": [
+    "file://CONTEXT.md",
+    "file://CONTEXT-MAP.md",
+    "file://ARCHITECTURE.md",
+    "file://docs/adr/**/*.md",
+    "skill://.kiro/skills/budgeted-plan/SKILL.md"
+  ]
+}

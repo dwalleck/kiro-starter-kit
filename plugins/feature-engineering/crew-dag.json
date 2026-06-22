@@ -1,0 +1,24 @@
+{
+  "_comment": "MANUAL variant. The literal payload feature-engineering-generator emits for ONE pass via the subagent (crew) tool. Flat by construction: design -> plan -> build, linear. The human-adjudicated gates (interrogated-spec sign-off and prove-it-prototype probe/oracle agreement) are NOT in this DAG \u2014 the orchestrator runs them in its own turns FIRST and writes .feature/spec.md + .feature/probe.md, because a blocking crew cannot do interactive one-question-at-a-time interrogation. This DAG is the autonomous tail: design (falsifiable-design) -> plan (budgeted-plan) -> build (checkpointed-build). Forward handoff is via .feature/*.md on a shared cwd, NOT via prompt_template (only {task} is substituted). Final validation (oracle re-check, budgets, review) lives in the orchestrator's own turns after the crew returns (generator Step 5). For an engine-bounded build/validate loop, use crew-dag-loop.json instead.",
+  "task": "<<the user's feature request, verbatim \u2014 e.g. 'Add an unread-count endpoint to the inbox service'>>",
+  "mode": "blocking",
+  "stages": [
+    {
+      "name": "design",
+      "role": "feature-engineering-designer",
+      "prompt_template": "Produce a falsifiable design for this feature: {task}\n\nRead .feature/spec.md (the signed-off behavior contract) and .feature/probe.md (the probe/oracle agreement and what was learned about the real system). Apply the falsifiable-design discipline: enumerate every production-reachable input shape, write the design as numbered claims, pair each claim with an independent falsifier and a distinct oracle, rank falsifiers by cost, and RUN THE CHEAPEST FALSIFIER NOW \u2014 it must pass before you finish. Write the design with its Falsification table (including a Regression fence column) and a Negative space list of >=3 things the feature deliberately will NOT do to .feature/design.md following the output contract in your prompt. Do NOT write production code."
+    },
+    {
+      "name": "plan",
+      "role": "feature-engineering-planner",
+      "depends_on": ["design"],
+      "prompt_template": "Decompose the approved design into a budgeted slice plan for: {task}\n\nRead .feature/design.md and .feature/spec.md. Apply the budgeted-plan discipline: one slice per claim, each slice <= ~50 lines / <= 2 files / <= 30 minutes. For every slice fill in ALL mandatory fields \u2014 claim, oracle, stress fixture (designed to FAIL on a plausible bug, with expected output written down first), loop/wall budget for every new loop (asymptotic cost AND production scale), and exact file paths. Write the plan with a Plan Self-Review section (the five lists, no gaps) to .feature/plan.md following the output contract in your prompt. You have NO shell and NO code tools by design: you plan, you do not build."
+    },
+    {
+      "name": "build",
+      "role": "feature-engineering-builder",
+      "depends_on": ["plan"],
+      "prompt_template": "Implement the slice plan one slice at a time for: {task}\n\nRead .feature/plan.md, .feature/design.md, and .feature/probe.md. Apply the checkpointed-build discipline: for EACH slice in order \u2014 implement the smallest change, run unit tests, run the slice's stress fixture, re-run the prove-it-prototype oracle against the built code, and check the loop/wall budget at fixture scale. All five must pass before you advance; if any fails, fix and re-run the SAME slice (do not push forward). Never edit the probe/oracle to make them agree. Append a per-slice result block to .feature/status.md and commit one slice per green checkpoint. Never modify the spec or design to make a slice pass \u2014 surface the conflict instead."
+    }
+  ]
+}

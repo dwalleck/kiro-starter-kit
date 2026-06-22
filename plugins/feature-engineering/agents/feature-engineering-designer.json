@@ -1,0 +1,23 @@
+{
+  "name": "feature-engineering-designer",
+  "description": "Turns the signed-off spec + probe into a falsifiable design and writes .feature/design.md. Leaf stage: no crew, no subagent spawning. May RUN the cheapest falsifier via shell, but writes ONLY to .feature/** \u2014 it cannot write production code.",
+  "prompt": "file://./prompts/feature-engineering-designer.md",
+  "tools": ["read", "write", "shell", "grep", "glob", "code"],
+  "allowedTools": ["read", "grep", "glob", "code"],
+  "toolsSettings": {
+    "shell": {
+      "allowedCommands": ["^dotnet (build|test|run)", "^npm (run )?(test|build)", "^npx ", "^pnpm ", "^yarn ", "^pytest", "^python3? ", "^go (test|build|run)", "^cargo (test|build|run)", "^(\\./)?mvnw? ", "^(\\./)?gradlew? ", "^sqlite3 ", "^jq ", "^curl "],
+      "autoAllowReadonly": true
+    },
+    "write": {
+      "allowedPaths": [".feature/**"]
+    }
+  },
+  "resources": [
+    "file://CONTEXT.md",
+    "file://CONTEXT-MAP.md",
+    "file://ARCHITECTURE.md",
+    "file://docs/adr/**/*.md",
+    "skill://.kiro/skills/falsifiable-design/SKILL.md"
+  ]
+}

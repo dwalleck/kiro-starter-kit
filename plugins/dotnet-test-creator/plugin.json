@@ -1,0 +1,9 @@
+{
+  "name": "dotnet-test-creator",
+  "version": "0.1.0",
+  "format": "kiro-cli",
+  "description": "Generates comprehensive, verified unit tests for any language using an orchestrated Research → Plan → Implement → Validate agent pipeline, backed by a library of test-quality and .NET test-framework skills.",
+  "author": {
+    "name": "Daryl Walleck"
+  }
+}

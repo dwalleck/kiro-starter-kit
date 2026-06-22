@@ -1,0 +1,25 @@
+{
+  "name": "feature-engineering-builder",
+  "description": "Implements the slice plan (every slice, or only the items named on loop re-entry): writes production code + tests and runs unit tests / stress fixtures / the oracle / budget checks INLINE per slice. Leaf stage: no crew, no subagent spawning. The ONLY stage that writes production code \u2014 but it is DENIED write access to .feature/spec.md, design.md, probe.md, and plan.md, so it cannot tamper with the contract or the oracle to force agreement; it may only append to .feature/status.md.",
+  "prompt": "file://./prompts/feature-engineering-builder.md",
+  "tools": ["read", "write", "shell", "grep", "glob", "code"],
+  "allowedTools": ["read", "grep", "glob", "code"],
+  "toolsSettings": {
+    "shell": {
+      "allowedCommands": ["^dotnet (build|test|restore|run|add|format)", "^npm (run )?(test|build|ci|install)", "^npx ", "^pnpm ", "^yarn ", "^pytest", "^python3? ", "^go (test|build|vet|run)", "^cargo (test|build|run|fmt|clippy)", "^(\\./)?mvnw? ", "^(\\./)?gradlew? ", "^sqlite3 ", "^jq ", "^curl ", "^git (status|log|diff|show|add|commit|rev-parse|branch)"],
+      "autoAllowReadonly": true
+    },
+    "write": {
+      "allowedPaths": ["**/*"],
+      "deniedPaths": [".git/**", ".feature/spec.md", ".feature/design.md", ".feature/probe.md", ".feature/plan.md"]
+    }
+  },
+  "resources": [
+    "file://CONTEXT.md",
+    "file://CONTEXT-MAP.md",
+    "file://ARCHITECTURE.md",
+    "file://docs/adr/**/*.md",
+    "skill://.kiro/skills/checkpointed-build/SKILL.md",
+    "skill://.kiro/skills/tdd-scoped/SKILL.md"
+  ]
+}
