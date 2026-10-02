@@ -24,6 +24,11 @@
       "name": "feature-engineering",
       "source": "./plugins/feature-engineering",
       "description": "Builds features via an engine-enforced Spec → Probe → Design → Plan → Build → Validate pipeline that refuses to advance on a vague spec or disproven understanding, and loops when built code drifts from the plan."
+    },
+    {
+      "name": "code-review-max",
+      "source": "./plugins/code-review-max",
+      "description": "Max-effort, recall-mode code review as a Kiro workflow for native Windows with no Python: eight parallel finder angles, per-candidate verification, a gap sweep, re-votes on unstable verdicts, then ranked findings and postable Conventional Comments."
     }
   ]
 }
