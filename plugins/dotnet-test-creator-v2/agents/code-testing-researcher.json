@@ -1,0 +1,14 @@
+{
+  "name": "code-testing-researcher",
+  "description": "Read-only research stage for the test-generation crew: analyzes the codebase (structure, language, framework, build/test commands, API surface, per-file coverage) and writes .testagent/research.md. Use as the first orchestrate_subagent stage (no depends_on).",
+  "prompt": "file://./prompts/code-testing-researcher.md",
+  "tools": ["read_file", "read_files", "grep_search", "file_search", "fs_write"],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_write", "match": ["**"], "exclude": [".testagent/**"], "effect": "deny" }
+    ]
+  },
+  "resources": [
+    "skill://.kiro/skills/code-testing-extensions/SKILL.md"
+  ]
+}

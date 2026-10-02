@@ -1,0 +1,29 @@
+{
+  "_comment": "Reference orchestrate_subagent payload (documentation — the code-testing-generator orchestrator emits this shape inline; this file is not loaded by the engine). v3/KAS port of crew-dag.json. CORRECTED model (the earlier v2 draft assumed roles could not be custom agents — that is wrong): orchestrate_subagent's `role` is a generated enum over the agent registry, so each stage's `role` is a REGISTERED custom agent — the code-testing-* agents in ./agents/, KAS-shaped with a `permissions` block (the marker that makes KAS load them; agents that use the old allowedTools/toolsSettings without `permissions` are silently dropped). Because the role carries its OWN system prompt (prompts/*.md) and its OWN per-stage tools + permissions, prompt_template only needs the task — NOT the inlined methodology. Per-stage permissions ARE enforced: researcher/planner have no shell and are write-locked to .testagent/**; validator runs shell but is write-locked to .testagent/** (cannot edit tests/source); implementer writes anywhere except .git. Ordering is `depends_on`; data handoff is the .testagent/*.md files on the shared cwd (authoritative for large content). orchestrate_subagent substitutes {task} and ALSO threads each successful depends_on stage's text `response` into the next stage's prompt under a 'Context from previous stages' header (a bonus summary; the files remain the source of truth, and a stage's returned `files` are NOT auto-attached downstream). The DAG is acyclic with NO loop — and that is fine; iteration, if wanted, is an orchestrator re-invoke. Prereq: the host must enable the `subagentOrchestration` setting (else only the single-shot invoke_sub_agent tool is exposed, not this DAG).",
+  "task": "<<the user's test-generation request, verbatim — e.g. 'Generate unit tests for src/InvoiceService.ts'>>",
+  "stages": [
+    {
+      "name": "research",
+      "role": "code-testing-researcher",
+      "prompt_template": "Research the codebase for this test-generation task: {task}\n\nFollow your system prompt's output contract and write the complete findings to .testagent/research.md. Read the matching language extension first. Do NOT write any test code."
+    },
+    {
+      "name": "plan",
+      "role": "code-testing-planner",
+      "depends_on": ["research"],
+      "prompt_template": "Create a phased test implementation plan for: {task}\n\nRead .testagent/research.md, then follow your system prompt's output contract and write .testagent/plan.md. Do NOT write any test code."
+    },
+    {
+      "name": "implement",
+      "role": "code-testing-implementer",
+      "depends_on": ["plan"],
+      "prompt_template": "Implement EVERY phase of the test plan in order for: {task}\n\nRead .testagent/plan.md and .testagent/research.md, then follow your system prompt: write test files (append-only; never edit production code), build and run ONLY the affected test project inline, fix failing assertions against real behavior, and append a per-phase result block to .testagent/status.md."
+    },
+    {
+      "name": "validate",
+      "role": "code-testing-validator",
+      "depends_on": ["implement"],
+      "prompt_template": "Validate the full test suite for: {task}\n\nFollow your system prompt: full non-incremental build + fresh full test run + coverage-gap check + the test-quality audit (test-gap-analysis, assertion-quality, test-anti-patterns). End with VERDICT: CLEAN or VERDICT: CHANGES_NEEDED followed by a categorized FAILING/MISSING/WEAK/SMELL list, and append the same to .testagent/status.md. Do NOT write tests yourself."
+    }
+  ]
+}

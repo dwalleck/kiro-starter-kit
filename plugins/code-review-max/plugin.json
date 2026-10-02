@@ -1,0 +1,9 @@
+{
+  "name": "code-review-max",
+  "version": "0.1.0",
+  "format": "kiro-cli",
+  "description": "Max-effort, recall-mode code review as a Kiro workflow (kiro-cli 2.26.0+, KAS engine) for native Windows with no Python: eight finder angles in parallel, one fresh session per candidate verification, a gap sweep, re-votes on unstable verdicts, then ranked findings and postable Conventional Comments. Deterministic bookkeeping runs in crtool.mjs on the node.exe kiro-cli already ships for KAS.",
+  "author": {
+    "name": "Daryl Walleck"
+  }
+}

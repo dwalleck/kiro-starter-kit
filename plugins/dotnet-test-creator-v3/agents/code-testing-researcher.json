@@ -1,0 +1,14 @@
+{
+  "name": "code-testing-researcher",
+  "description": "Read-only research step of the dotnet-test-generation workflow: analyzes the codebase (structure, language, framework, build/test commands, API surface, per-file coverage) and writes .testagent/research.md. No shell; writes only under .testagent/.",
+  "prompt": "file://./prompts/code-testing-researcher.md",
+  "tools": ["read_file", "read_files", "grep_search", "file_search", "code", "fs_write"],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_write", "match": ["**"], "exclude": [".testagent/**"], "effect": "deny" }
+    ]
+  },
+  "resources": [
+    "skill://.kiro/skills/code-testing-extensions/SKILL.md"
+  ]
+}

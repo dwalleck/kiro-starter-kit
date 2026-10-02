@@ -1,0 +1,11 @@
+{
+  "name": "code-testing-planner",
+  "description": "Read-only planning stage for the test-generation crew: reads .testagent/research.md and writes a phased .testagent/plan.md. No shell, no source/test writes. Depends on the research stage.",
+  "prompt": "file://./prompts/code-testing-planner.md",
+  "tools": ["read_file", "read_files", "grep_search", "file_search", "fs_write"],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_write", "match": ["**"], "exclude": [".testagent/**"], "effect": "deny" }
+    ]
+  }
+}

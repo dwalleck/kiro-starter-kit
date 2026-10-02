@@ -1,0 +1,15 @@
+{
+  "name": "code-testing-generator",
+  "description": "Orchestrates polyglot unit-test generation via the orchestrate_subagent tool: a Research->Plan->Implement->Validate DAG whose stage roles are the registered code-testing-* agents, handing off through .testagent/*.md. Use when asked to generate tests, write unit tests, add tests, or improve coverage.",
+  "prompt": "file://./prompts/code-testing-generator.md",
+  "tools": ["read_file", "read_files", "grep_search", "file_search", "fs_write", "str_replace", "execute_bash", "orchestrate_subagent"],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_write", "match": [".git/**", "**/.git/**"], "effect": "deny" }
+    ]
+  },
+  "resources": [
+    "skill://.kiro/skills/code-testing-agent/SKILL.md",
+    "skill://.kiro/skills/code-testing-extensions/SKILL.md"
+  ]
+}

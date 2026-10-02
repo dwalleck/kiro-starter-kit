@@ -1,0 +1,14 @@
+{
+  "name": "code-testing-implementer",
+  "description": "Implementation stage for the test-generation crew: reads .testagent/plan.md + research.md, writes test files, and builds/tests/fixes inline via shell. Writes anywhere except .git; runs the project toolchain. Depends on the plan stage.",
+  "prompt": "file://./prompts/code-testing-implementer.md",
+  "tools": ["read_file", "read_files", "grep_search", "file_search", "fs_write", "str_replace", "execute_bash"],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_write", "match": [".git/**", "**/.git/**"], "effect": "deny" }
+    ]
+  },
+  "resources": [
+    "skill://.kiro/skills/code-testing-extensions/SKILL.md"
+  ]
+}

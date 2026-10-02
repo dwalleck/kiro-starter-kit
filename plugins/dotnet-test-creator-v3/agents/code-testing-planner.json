@@ -1,0 +1,11 @@
+{
+  "name": "code-testing-planner",
+  "description": "Read-only plan step of the dotnet-test-generation workflow: reads .testagent/research.md and writes a phased .testagent/plan.md. No shell; writes only under .testagent/.",
+  "prompt": "file://./prompts/code-testing-planner.md",
+  "tools": ["read_file", "read_files", "grep_search", "file_search", "fs_write"],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_write", "match": ["**"], "exclude": [".testagent/**"], "effect": "deny" }
+    ]
+  }
+}

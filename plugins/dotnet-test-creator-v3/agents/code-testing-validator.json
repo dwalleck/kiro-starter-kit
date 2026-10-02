@@ -1,0 +1,18 @@
+{
+  "name": "code-testing-validator",
+  "description": "Validate step of the dotnet-test-generation workflow's validation loop: full non-incremental build + fresh test run + coverage-gap check + test-quality audit, then writes .testagent/validation.md and the loop's verdict file .testagent/validation.json (CLEAN | CHANGES_NEEDED). Runs shell but is write-locked to .testagent/ so it cannot edit tests or source.",
+  "prompt": "file://./prompts/code-testing-validator.md",
+  "tools": ["read_file", "read_files", "grep_search", "file_search", "fs_write", "execute_bash"],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_write", "match": ["**"], "exclude": [".testagent/**"], "effect": "deny" }
+    ]
+  },
+  "resources": [
+    "skill://.kiro/skills/code-testing-extensions/SKILL.md",
+    "skill://.kiro/skills/test-analysis-extensions/SKILL.md",
+    "skill://.kiro/skills/test-gap-analysis/SKILL.md",
+    "skill://.kiro/skills/assertion-quality/SKILL.md",
+    "skill://.kiro/skills/test-anti-patterns/SKILL.md"
+  ]
+}

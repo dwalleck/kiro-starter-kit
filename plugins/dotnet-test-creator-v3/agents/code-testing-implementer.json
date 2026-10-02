@@ -1,0 +1,15 @@
+{
+  "name": "code-testing-implementer",
+  "description": "Implement step of the dotnet-test-generation workflow's validation loop: writes test files from .testagent/plan.md (first pass) or the gaps in .testagent/validation.json (later passes), builds/tests/fixes inline, and appends .testagent/status.md. Writes anywhere except .git and the validator's verdict files.",
+  "prompt": "file://./prompts/code-testing-implementer.md",
+  "tools": ["read_file", "read_files", "grep_search", "file_search", "code", "fs_write", "str_replace", "execute_bash"],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_write", "match": [".git/**", "**/.git/**"], "effect": "deny" },
+      { "capability": "fs_write", "match": [".testagent/validation.json", ".testagent/validation.md"], "effect": "deny" }
+    ]
+  },
+  "resources": [
+    "skill://.kiro/skills/code-testing-extensions/SKILL.md"
+  ]
+}

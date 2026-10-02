@@ -1,0 +1,5 @@
+{
+  // MD013/line-length — disabled. This repo's docs (AGENTS.md, steering files)
+  // intentionally use long prose lines, so the line-length rule adds noise.
+  "MD013": false
+}

@@ -1,0 +1,69 @@
+{
+  "name": "dotnet-test-generation",
+  "description": "Polyglot unit-test generation: Research -> Plan -> repeat[Implement, Validate], handing off through .testagent/*.md. The loop re-runs implement on the validator's named gaps until .testagent/validation.json reports CLEAN (max 3 passes).",
+  "inputs": {
+    "task": "prompt"
+  },
+  "steps": [
+    {
+      "type": "step",
+      "id": "setup",
+      "agent": "wf-coder",
+      "effortLevel": "low",
+      "captureOutput": false,
+      "prompt": "You are the setup step of a test-generation workflow run. Do ONLY this, with shell commands run from the workspace root:\n1. If a .testagent directory exists from a previous run, archive it by renaming it to .testagent-prev-<YYYYMMDD-HHMMSS> (current local time). NEVER delete it.\n2. Create a fresh, empty .testagent directory.\n\nDo not read, create, or modify anything else, and do not inspect the codebase. Later steps depend on .testagent starting empty: a leftover .testagent/validation.json from an earlier run would end this run's validation loop before any tests are written."
+    },
+    {
+      "type": "step",
+      "id": "research",
+      "agent": "code-testing-researcher",
+      "prompt": "Research the codebase for this test-generation task: {{task}}\n\nFollow your system prompt's process and output contract and write the complete findings to .testagent/research.md. Read the matching language extension first. Do NOT write any test code.",
+      "artifacts": {
+        "research": ".testagent/research.md"
+      }
+    },
+    {
+      "type": "step",
+      "id": "plan",
+      "agent": "code-testing-planner",
+      "prompt": "Create a phased test implementation plan for: {{task}}\n\nRead {{artifacts.research}}, then follow your system prompt's output contract and write .testagent/plan.md. Do NOT write any test code.",
+      "artifacts": {
+        "plan": ".testagent/plan.md"
+      }
+    },
+    {
+      "type": "repeat",
+      "id": "test-loop",
+      "maxIterations": 3,
+      "onMaxIterations": "continue",
+      "stopCondition": {
+        "fileCheck": {
+          "path": ".testagent/validation.json",
+          "jsonPath": "verdict",
+          "value": "CLEAN"
+        }
+      },
+      "steps": [
+        {
+          "type": "step",
+          "id": "implement",
+          "agent": "code-testing-implementer",
+          "prompt": "Implement unit tests for: {{task}}\n\nYour inputs are {{artifacts.research}} and {{artifacts.plan}}.\n\nFirst check whether .testagent/validation.json exists:\n- If it does NOT exist, this is the FIRST PASS: implement EVERY phase of the plan, in order.\n- If it EXISTS, this is a LOOP RE-ENTRY within this same run (the setup step archived every earlier run's files): read .testagent/validation.json and .testagent/validation.md and address ONLY the gaps they list, treating each as a GAP item. Do not redo phases that already succeeded.\n\nFollow your system prompt for edit boundaries and the inline build/test/fix cycle, and append one result block per phase or gap to .testagent/status.md. Never create, edit, or delete .testagent/validation.json or .testagent/validation.md; only the validate step writes them.",
+          "artifacts": {
+            "status": ".testagent/status.md"
+          }
+        },
+        {
+          "type": "step",
+          "id": "validate",
+          "agent": "code-testing-validator",
+          "prompt": "Validate the full test suite for: {{task}}\n\nFollow your system prompt: a full non-incremental build, a fresh full test run, a coverage-gap check against {{artifacts.research}} and {{artifacts.status}}, and the test-quality audit. Write the report to .testagent/validation.md, append the verdict to .testagent/status.md, and write .testagent/validation.json LAST. This workflow re-runs the implement step on your listed gaps until the verdict is CLEAN, so name every gap concretely: the implementer acts only on what you list. Do NOT write tests yourself.",
+          "artifacts": {
+            "validation_report": ".testagent/validation.md",
+            "validation": ".testagent/validation.json"
+          }
+        }
+      ]
+    }
+  ]
+}

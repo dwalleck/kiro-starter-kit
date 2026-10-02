@@ -1,0 +1,13 @@
+{
+  "$schema": "../../agent-schema.json",
+  "name": "some-agent",
+  "description": "Analyzes type design for encapsulation quality, invariant expression, and enforcement.",
+  "prompt": "You do coding things",
+  "tools": ["fs_read", "execute_bash", "grep", "code", "glob"],
+  "allowedTools": ["fs_read", "execute_bash", "grep", "code", "glob"],
+  "resources": [
+    "skill://.kiro/skills/**/SKILL.md",
+    "file://.editorconfig",
+    "file://.kiro/steering/*.md"
+  ]
+}
