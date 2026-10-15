@@ -21,6 +21,11 @@
       "description": "Polyglot unit-test generation via an orchestrated Research → Plan → Implement → Validate agent pipeline, with deep .NET test-framework skills (MSTest/TUnit authoring, migrations, CRAP scores)."
     },
     {
+      "name": "dotnet-test-creator-v4",
+      "source": "./plugins/dotnet-test-creator-v4",
+      "description": "Polyglot unit-test generation as a Kiro workflow (kiro-cli 2.26.0+, KAS engine) built on the current dotnet-test plugin: test-engineer entry agent, then Research → Plan → repeat[Implement, Validate] gated on a verdict file, handing off through .git/testagent/ so nothing is ever stageable. Ships the vendored dotnet-test skills."
+    },
+    {
       "name": "feature-engineering",
       "source": "./plugins/feature-engineering",
       "description": "Builds features via an engine-enforced Spec → Probe → Design → Plan → Build → Validate pipeline that refuses to advance on a vague spec or disproven understanding, and loops when built code drifts from the plan."

@@ -1,0 +1,72 @@
+{
+  "name": "dotnet-test-generation",
+  "description": "Polyglot unit-test generation built on the dotnet-test plugin's Research -> Plan -> Implement pipeline: setup, research, plan, then repeat[implement, validate] until .git/testagent/validation.json reports CLEAN (max 3 passes). Steps hand off through files under .git/testagent/ (git metadata, so nothing is ever stageable). Input: task = the user's test-generation request. Result: generated tests plus .git/testagent/validation.md with a Requirement | Evidence table. Requires the code-testing-researcher, code-testing-planner, code-testing-implementer, and code-testing-validator agents and the vendored dotnet-test skills under .kiro/skills/.",
+  "inputs": {
+    "task": "prompt"
+  },
+  "steps": [
+    {
+      "type": "step",
+      "id": "setup",
+      "agent": "wf-coder",
+      "effortLevel": "low",
+      "captureOutput": false,
+      "prompt": "You are the setup step of a test-generation workflow run. Do ONLY the following, with shell commands run from the workspace root:\n\n1. Run `git rev-parse --git-dir`. If it does not print exactly `.git`, this workspace is not a normal Git checkout (it is a worktree, a submodule, or not a repository). Create nothing, report that exact output, and signal failure.\n2. If `.git/testagent` exists from a previous run, rename it to `.git/testagent-prev-<YYYYMMDD-HHMMSS>` using the current local time. NEVER delete it.\n3. Create a fresh, empty `.git/testagent` directory.\n\nDo not read, create, or modify anything else, and do not inspect the codebase. Later steps depend on `.git/testagent` starting empty: a leftover validation.json from an earlier run would end this run's validation loop before any tests are written. The run's working files live under `.git/` because Git can never stage anything there.",
+      "artifacts": {
+        "testagent_dir": ".git/testagent"
+      }
+    },
+    {
+      "type": "step",
+      "id": "research",
+      "agent": "code-testing-researcher",
+      "prompt": "Research the codebase for this test-generation task: {{task}}\n\nTESTAGENT_DIR for this run is `{{artifacts.testagent_dir}}` (the workspace's `.git/testagent` directory, which the setup step created empty). Follow your research process and write the complete research document to `{{artifacts.testagent_dir}}/research.md`: the requirement checklist, the bounded target inventory, source-to-test pairing, conventions, and both test commands (scoped and harness-equivalent). This workflow has no sub-agents, so do the research yourself in this session. Do NOT write any test code.",
+      "artifacts": {
+        "research": "{{artifacts.testagent_dir}}/research.md"
+      }
+    },
+    {
+      "type": "step",
+      "id": "plan",
+      "agent": "code-testing-planner",
+      "prompt": "Create a phased test implementation plan for: {{task}}\n\nRead `{{artifacts.research}}`; it is your only input from the research step, which ran in a separate session. Then write the plan to `{{artifacts.testagent_dir}}/plan.md` following your output contract, mapping every checklist item in the research document to a concrete planned test or an explicit blocker. Do NOT write any test code.",
+      "artifacts": {
+        "plan": "{{artifacts.testagent_dir}}/plan.md"
+      }
+    },
+    {
+      "type": "repeat",
+      "id": "test-loop",
+      "maxIterations": 3,
+      "onMaxIterations": "continue",
+      "stopCondition": {
+        "fileCheck": {
+          "path": "{{artifacts.testagent_dir}}/validation.json",
+          "jsonPath": "verdict",
+          "value": "CLEAN"
+        }
+      },
+      "steps": [
+        {
+          "type": "step",
+          "id": "implement",
+          "agent": "code-testing-implementer",
+          "prompt": "Implement unit tests for: {{task}}\n\nTESTAGENT_DIR is `{{artifacts.testagent_dir}}`. Your inputs are `{{artifacts.research}}` and `{{artifacts.plan}}`; the earlier steps ran in separate sessions and those files are everything you have from them.\n\nFirst check whether `{{artifacts.testagent_dir}}/validation.json` exists:\n- If it does NOT exist, this is the FIRST PASS: implement EVERY phase of the plan, in order.\n- If it EXISTS, this is a LOOP RE-ENTRY within this same run (setup archived every earlier run's files): read `{{artifacts.testagent_dir}}/validation.json` and `{{artifacts.testagent_dir}}/validation.md` and address ONLY the gaps they list, treating each as a GAP item. Do not redo phases that already succeeded.\n\nFollow your process for edit boundaries, the inline build/test/fix cycle, and the harness-discovery check, and append one result block per phase or gap to `{{artifacts.testagent_dir}}/status.md`. This workflow has no sub-agents: build, test, fix, and format inline. Never create, edit, or delete validation.json or validation.md; only the validate step writes them. When every phase or gap is done, finish the step normally even if some blocks are PARTIAL or FAILED; judging them is the validate step's job.",
+          "artifacts": {
+            "status": "{{artifacts.testagent_dir}}/status.md"
+          }
+        },
+        {
+          "type": "step",
+          "id": "validate",
+          "agent": "code-testing-validator",
+          "prompt": "Validate the test suite generated for: {{task}}\n\nTESTAGENT_DIR is `{{artifacts.testagent_dir}}`. Read `{{artifacts.research}}` (requirement checklist, bounded inventory, commands) and `{{artifacts.status}}` (what the implementer created, pass by pass). Run your checks: the bounded build, a fresh test run, harness discovery, requirement-to-test mapping, the coverage-gap check, and the quality audit with test-gap-analysis, assertion-quality, and test-anti-patterns. Write the report to `{{artifacts.testagent_dir}}/validation.md` (it must contain the `| Requirement | Evidence |` table), append the verdict and gap list to `{{artifacts.testagent_dir}}/status.md`, and write `{{artifacts.testagent_dir}}/validation.json` LAST.\n\nThis workflow re-runs the implement step on your listed gaps until the verdict is CLEAN (at most 3 passes), so name every gap concretely: the implementer acts only on what you list. A CHANGES_NEEDED verdict is a successful validation; finish the step normally. Do NOT write or fix tests yourself.",
+          "artifacts": {
+            "validation_report": "{{artifacts.testagent_dir}}/validation.md",
+            "validation": "{{artifacts.testagent_dir}}/validation.json"
+          }
+        }
+      ]
+    }
+  ]
+}

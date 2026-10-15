@@ -1,0 +1,9 @@
+{
+  "name": "dotnet-test-creator-v4",
+  "version": "0.1.0",
+  "format": "kiro-cli",
+  "description": "Polyglot unit-test generation as a Kiro workflow (kiro-cli 2.26.0+, KAS engine) built on the current dotnet-test plugin: a test-engineer entry agent, then Research -> Plan -> repeat[Implement, Validate] gated on a verdict file, handing off through .git/testagent/ so no working file is ever stageable. Ships the vendored dotnet-test skills the pipeline reads.",
+  "author": {
+    "name": "Daryl Walleck"
+  }
+}
