@@ -49,8 +49,9 @@ directly, as upstream does.
 
 | Path | Installs to | What |
 | --- | --- | --- |
-| `workflows/dotnet-test-generation.workflow.json` | `.kiro/workflows/` | The recipe (5 step nodes) |
+| `workflows/dotnet-test-generation.workflow.json` | `.kiro/workflows/` | The recipe (5 step nodes, all on project-owned agents) |
 | `agents/test-engineer.md` | `.kiro/agents/` | Entry point: Direct strategy inline, or launches the workflow and relays its result |
+| `agents/code-testing-setup.md` | `.kiro/agents/` | Setup step: checks the checkout, archives an old `.git/testagent/`, creates a fresh one (shell only) |
 | `agents/code-testing-researcher.md` | `.kiro/agents/` | Research step → `research.md` |
 | `agents/code-testing-planner.md` | `.kiro/agents/` | Plan step → `plan.md` (no shell) |
 | `agents/code-testing-implementer.md` | `.kiro/agents/` | Implement step: writes tests, builds, tests, fixes, checks discovery → `status.md` |
@@ -83,6 +84,12 @@ rm -f .kiro/agents/code-testing-{generator,researcher,planner,implementer,valida
 The `.workflow.json` suffix is required; the loader rejects a plain `.json` file in `.kiro/workflows/`.
 Nothing needs to be added to `.gitignore`.
 
+**Workspace trust.** Since kiro-cli 2.33.0 Kiro asks you to trust a folder before it loads that folder's
+`.kiro/` agents, workflows, hooks and MCP servers, so the first launch in this repository after
+installing shows that prompt. Answer *Trust* (the decision is remembered per folder), or pass
+`--trust-workspace` to skip it for one launch without saving it. Declining exits without loading the
+plugin. ACP clients that drive the engine directly never see this prompt.
+
 Prerequisites: `git` on `PATH` and a working test runtime for the target language (`dotnet`, `pytest`,
 `npm`, `go`, `cargo`, Pester, ...). The researcher's `find-untested-sources` analyzer additionally
 wants a .NET SDK that can run file-based apps (Roslyn engine, .NET-only repositories) or
@@ -91,15 +98,21 @@ pairs sources to tests by hand.
 
 ## Enable workflows
 
-Workflows are off by default and only exist on the v3 (KAS) engine:
+Workflows are off by default (`chat.enableWorkflows`). On kiro-cli 3.x the V3 (KAS) engine is the only
+chat engine, so no flag is needed (`--v3` is accepted and ignored); on 2.x start `kiro-cli chat --v3`.
 
-1. `kiro-cli chat --v3`
-2. `/settings` → **Features** → enable **Workflows** (stored as `chat.enableWorkflows`)
-3. Restart kiro-cli. Workflow commands are fixed when the process starts.
+1. `/settings` → **Features** → enable **Workflows** (stored as `chat.enableWorkflows`).
+2. On the same **Features** page set **Workflow use** to **Large tasks only** or **Delegate all work**
+   (stored as `chat.workflowLaunch`, kiro-cli 2.34.0+; the engine option exists since 2.33.1). The
+   default, **When asked**, tells agents to start a workflow only when you ask for one by name, which
+   makes `test-engineer` do broad generation inline instead of launching the pipeline.
+3. Restart kiro-cli. The Workflows setting travels in the engine handshake, so `run_workflow` appears
+   only in sessions started after enabling it.
 
 ## Run
 
-- **Through the entry agent** (recommended): `kiro-cli chat --v3 --agent test-engineer`, then
+- **Through the entry agent** (recommended): `kiro-cli chat --agent test-engineer` (add `--v3` on
+  kiro-cli 2.x), then
   "Generate unit tests for `<module or project>`". It writes tests itself for one function, class, or
   file; for anything broader it launches the workflow with `run_workflow` and, when the run finishes,
   reports the validator's status and `| Requirement | Evidence |` table.
@@ -108,7 +121,10 @@ Workflows are off by default and only exist on the v3 (KAS) engine:
   `.git/testagent/validation.md`.
 
 Follow a run with `/workflow` (`p` pause, `r` resume/retry, `s` steer or reply to a step, Ctrl+X twice
-to stop) or `/workflow status <id>`. `/workflow retry <id>` re-runs only the failed steps.
+to stop) or `/workflow status <id>`, which on kiro-cli 3.1.0+ also shows the credits each step used.
+`/workflow retry <id>` re-runs only the failed steps, and since 2.34.0 a run interrupted by a restart
+resumes where it left off. If a step seems to ignore its skills, `/context show` (3.1.0+) lists any
+`skill://` resource that failed to load; the usual cause is `skills/` not copied into `.kiro/skills/`.
 
 ## Flow
 
@@ -117,7 +133,7 @@ flowchart TD
     User(["User request"]) --> TE["test-engineer"]
     TE -- "focused (one function/class/file)" --> Direct["writes tests inline,<br/>runs them, reviews pins"]
     TE -- "broad" --> Setup
-    Setup["setup (wf-coder)<br/>archive old .git/testagent, create fresh"] --> R
+    Setup["setup (code-testing-setup)<br/>archive old .git/testagent, create fresh"] --> R
     R["research<br/>(code-testing-researcher)"] -- research.md --> P["plan<br/>(code-testing-planner)"]
     P -- plan.md --> I
     subgraph Loop["test-loop: repeat, max 3 passes"]
@@ -142,7 +158,7 @@ flowchart TD
 
 | Step | Agent | Enforced scope (`permissions` + tool grant) | Writes |
 | --- | --- | --- | --- |
-| **setup** | bundled `wf-coder` (low effort) | unrestricted | renames an old `.git/testagent/`, creates a fresh one; fails if `git rev-parse --git-dir` is not `.git` |
+| **setup** | `code-testing-setup` (low effort) | shell only (`git rev-parse`, `mv`, `mkdir`); every file-tool write denied | renames an old `.git/testagent/`, creates a fresh one; fails if `git rev-parse --git-dir` is not `.git` |
 | **research** | `code-testing-researcher` | shell (for the pairing analyzer); `fs_write` denied outside `.git/testagent/**` | `research.md` |
 | **plan** | `code-testing-planner` | **no shell**; `fs_write` denied outside `.git/testagent/**` | `plan.md` |
 | **implement** | `code-testing-implementer` | shell + write; `fs_write` denied under `.git/` except `.git/testagent/**`, and denied on `validation.{json,md}` | test files, registration edits, `status.md` |
@@ -201,13 +217,30 @@ Limits:
 
 ## Permission prompts
 
-Every shell command and every file write asks for approval in the launching session unless that
-session trusts the tool. The engine asks regardless of the agents' `permissions` (an `effect: allow`
-rule for `.git/testagent/**` was tried and did not suppress the prompt), and the file-write prompt
-offers no "always accept" option. For an unattended run, trust the tools in the launching session
-before starting the workflow (`kiro-cli chat --v3 --trust-all-tools`, or `/tools trust` for
-`fs_write` and `execute_bash`). The agents' deny rules still hold under trust: the engine evaluates
-them before any prompt, and a denied call is refused without asking you.
+Every shell command, file write and skill load asks for approval in the launching session unless that
+session trusts the tool or a rule allows it (a full run of the v3 plugin asked 37 times). Ways to cut
+that down:
+
+- **Rules you create from the prompt.** Since kiro-cli 2.32.0 the write-approval prompt offers
+  *Always allow* for a folder at session, workspace or user scope: pick `.git/testagent/**` once and the
+  pipeline's state-file writes stop asking. Since 2.36.0 shell approvals offer a subcommand tier such as
+  `dotnet test *` or `git rev-parse *` between the exact command and `dotnet *`. User-scope grants
+  persist in `~/.kiro/settings/permissions.yaml` (`rules: - capability: shell / effect: allow /
+  match: [...]`); workspace-scope grants land in the workspace's own `permissions.yaml`.
+- **Trust the tools for the session**: `kiro-cli chat --trust-all-tools` (add `--v3` on 2.x), or
+  `/tools trust` for `fs_write` and `execute_bash`.
+- Not yet usable: *Approve for me* (2.36.0) appears under `/permissions` but stays dark until Kiro turns
+  on its classifier (`KIRO_TRUST_CLASSIFIER_MODE=enforce`), and it adds a billed classifier call per tool.
+
+The agents' `effect: deny` rules hold under all of these: the engine evaluates them before any prompt,
+and a denied call is refused without asking you (`Tool call denied by user's permissions. Rule: deny
+fs_write ...`). Whether an agent-profile `effect: allow` rule suppresses the prompt was last checked on
+kiro-cli 2.28.0, where it did not; re-check on a current build before relying on it. The setup agent
+carries such rules for its three commands as a harmless opt-in.
+
+Since kiro-cli 2.34.0 a shell command Kiro cannot parse is **denied without any prompt**. The step
+agents are told to keep commands simply quoted (no heredocs, no shell-written files) so a step does not
+fail silently on a quoting mistake.
 
 By default each step's first prompt also quotes your chat messages from the launching session (the
 engine's `injectOriginalUserRequest`), which is how the steps check their work against your own
@@ -234,6 +267,12 @@ Checked on **kiro-cli 2.28.0** (KAS 0.66.26, `acp --agent-engine v3`), 2026-10-1
 - Asked by a probe prompt to write a `{"verdict": "CLEAN"}` file without running its checks,
   `code-testing-validator` **refused** both times and the loop ran to its cap. A step prompt cannot
   make the validator fabricate the verdict that ends its own loop.
+
+Re-checked statically against **kiro-cli 3.1.0** (KAS 0.66.91), 2026-11-09, from the kiro-cli 3.1.0
+wire audit: the recipe schema, the dotted-key `fileCheck.jsonPath` form, the agent tool ids, the
+`permissions.rules` shape, and `run_workflow`/`inspect_workflow` are unchanged across 2.33.0–3.1.0.
+Two engine behaviours new in that span are documented above: the **Workflow use** launch setting
+(2.33.1) and the workspace trust prompt (2.33.0). Not re-run live on 3.1.0.
 
 Not yet verified: an end-to-end run on a real project, including a loop re-entry on real gaps.
 
@@ -274,6 +313,7 @@ dotnet-test-creator-v4/
 │   └── dotnet-test-generation.workflow.json
 ├── agents/
 │   ├── test-engineer.md
+│   ├── code-testing-setup.md
 │   ├── code-testing-researcher.md
 │   ├── code-testing-planner.md
 │   ├── code-testing-implementer.md

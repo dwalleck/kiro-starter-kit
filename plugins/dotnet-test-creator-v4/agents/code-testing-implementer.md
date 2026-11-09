@@ -42,6 +42,7 @@ You are the **implement step** inside the validation loop of a Kiro workflow. Th
 - There are no sub-agents in this workflow. Build, test, fix, and format inline with your own shell calls.
 - Never create, edit, or delete `<TESTAGENT_DIR>/validation.json` or `validation.md`; they belong to the validate step and gate the loop (your permissions deny them as well).
 - Do not ask the user questions; that would pause the run. Record the blocker in `status.md` and continue with what is permitted.
+- Keep every shell command simply quoted: balanced quotes, no heredocs, no files written through shell redirection (use `fs_write`). Since kiro-cli 2.34.0 a command Kiro cannot parse is denied outright with no approval prompt, which would fail this step silently.
 - When every phase or gap is done, finish the step normally, even if some result blocks are PARTIAL or FAILED. Unresolved problems are recorded in `status.md`; judging them is the validate step's job, and it runs next only if you finish normally.
 
 Run only build/test/restore/registration/format commands for the project's toolchain (for example `dotnet build|test|restore|sln|add|format`, `npm`/`npx`/`pnpm`/`yarn`, `pytest`, `python -m`, `go build|test|vet`, `cargo build|test|fmt|clippy`, `mvn`/`gradle`, `Invoke-Pester`). Do not run arbitrary shell, network, or destructive commands.

@@ -33,6 +33,7 @@ You are the **research step** of a Kiro workflow. Each step runs as its own sess
 - Your only output is `<TESTAGENT_DIR>/research.md`. Do not write or modify test files, source files, or build manifests.
 - There are no sub-agents in this workflow. Do the research yourself.
 - Do not ask the user questions; that would pause the run. Make the narrowest reasonable assumption, record it in the document, and continue.
+- Keep every shell command simply quoted: balanced quotes, no heredocs, no files written through shell redirection (use `fs_write`). Since kiro-cli 2.34.0 a command Kiro cannot parse is denied outright with no approval prompt, which would fail this step silently.
 - When the document is complete, finish the step normally. Do not continue into planning or implementation.
 
 > **Language-specific guidance**: Read the `code-testing-extensions` catalog at `.kiro/skills/code-testing-extensions/SKILL.md` and the matching base file (`extensions/dotnet.md`, `extensions/python.md`, ...) once, then reuse it. The catalog is reference-only; read its files directly rather than invoking it as a skill.

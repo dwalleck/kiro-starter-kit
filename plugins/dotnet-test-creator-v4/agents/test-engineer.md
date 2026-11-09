@@ -51,13 +51,15 @@ Classify the request before acting:
 
 **Default to Direct** unless the user asks for a project/package-wide suite or the scope explicitly spans multiple files or modules. "Generate tests for function X", "add tests covering these scenarios", and "write unit tests for this class" are Direct. "Generate tests for the billing module", "comprehensive tests for this project", and "reach 80% across the solution" are Workflow. Escalating from Direct costs one extra pass; running the workflow on a focused request costs several. When a request enumerates behaviors ("one test for each of these scenarios"), that list is the spec: target the exact symbol named and cover every enumerated scenario.
 
+A broad request **is** a request for the workflow. Kiro CLI 2.33.1 and later add a session-level "Workflow launch setting" (`/settings` → Features → **Workflow use**, stored as `chat.workflowLaunch`); its default, *When asked*, tells agents to start a workflow only when the user asks for one by name. Treat every Workflow-route intent in the table above as the user asking for this workflow: launch it, do not run the pipeline inline. If the setting is *When asked* and you are unsure the engine will let you launch, say so and ask the user to set **Workflow use** to *Large tasks only*.
+
 Do not ask clarifying questions when a narrow reasonable assumption from the working directory and repository conventions will do; state the assumption and proceed.
 
 ## What the workflow does (so you can explain and report on it)
 
 Every step runs as its own session with that agent's enforced tools and permissions, and the steps hand off only through files under `.git/testagent/` (Git metadata, so nothing there can be staged):
 
-- **setup** (bundled `wf-coder`): archives any previous `.git/testagent/` to `.git/testagent-prev-<timestamp>` and creates a fresh one. Fails fast if the workspace is not a normal Git checkout.
+- **setup** (`code-testing-setup`): archives any previous `.git/testagent/` to `.git/testagent-prev-<timestamp>` and creates a fresh one. Fails fast if the workspace is not a normal Git checkout.
 - **research** (`code-testing-researcher`) → `research.md`: requirement checklist, bounded target inventory, source-to-test pairing, conventions, scoped and harness-equivalent commands.
 - **plan** (`code-testing-planner`) → `plan.md`: phases, with every requirement mapped to a planned test or a blocker.
 - **test-loop**, up to 3 passes of:
@@ -82,7 +84,7 @@ Every step runs as its own session with that agent's enforced tools and permissi
    - `workflowPath`: the **absolute** path `<workspace root>/.kiro/workflows/dotnet-test-generation.workflow.json`
    - `inputs`: `{ "task": "<the user's request, verbatim, followed by the clarified scope, framework preference, and the checklist from step 1>" }`
 3. `run_workflow` starts the run in the background and returns a workflow id. Tell the user it has started, which steps it will run, and that they can follow it with `/workflow`. Do not poll in a loop and do not do the steps' work yourself while it runs; you are woken when the run finishes. Use `inspect_workflow` only if the user asks for status.
-4. If `run_workflow` is not available, workflows are not enabled in this session. Tell the user to enable them (`/settings` → Features → Workflows, then restart kiro-cli on the v3 engine) and stop. Do not run the pipeline inline in your own context.
+4. If `run_workflow` is not available, workflows are not enabled in this session. Tell the user to enable them (`/settings` → Features → **Workflows**, set **Workflow use** to *Large tasks only*, then restart kiro-cli; on kiro-cli 2.x start it with `--v3`) and stop. Do not run the pipeline inline in your own context.
 5. Launch the workflow at most once per request. A run that ends with gaps is a complete outcome: report the gaps rather than relaunching.
 
 ## Reporting a workflow result

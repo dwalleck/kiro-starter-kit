@@ -8,7 +8,7 @@
     {
       "type": "step",
       "id": "setup",
-      "agent": "wf-coder",
+      "agent": "code-testing-setup",
       "effortLevel": "low",
       "captureOutput": false,
       "prompt": "You are the setup step of a test-generation workflow run. Do ONLY the following, with shell commands run from the workspace root:\n\n1. Run `git rev-parse --git-dir`. If it does not print exactly `.git`, this workspace is not a normal Git checkout (it is a worktree, a submodule, or not a repository). Create nothing, report that exact output, and signal failure.\n2. If `.git/testagent` exists from a previous run, rename it to `.git/testagent-prev-<YYYYMMDD-HHMMSS>` using the current local time. NEVER delete it.\n3. Create a fresh, empty `.git/testagent` directory.\n\nDo not read, create, or modify anything else, and do not inspect the codebase. Later steps depend on `.git/testagent` starting empty: a leftover validation.json from an earlier run would end this run's validation loop before any tests are written. The run's working files live under `.git/` because Git can never stage anything there.",
